@@ -2,6 +2,7 @@ import {indexDoc, getAllDocs, getDoc, getAuth, createUser} from "./elastic_funct
 import {user} from "./instances";
 import DataService from "./data.service";
 import StorageService from "./storage.service";
+import {EventEmitter} from "events";
 /*
 indexDoc({
     title: 'Avatar',
@@ -28,23 +29,23 @@ class Main {
     }
     getData(){
         this.dataService.subject.subscribe((value) => {
-            this.storageService.store.push(value);
+            console.log(value);
         })
     }
     setData(value: string){
         this.dataService.subject.next(value);
     }
-    displayData(){
-        console.log('store', this.storageService.store);
-    }
+
 }
-
-const main = new Main(new DataService(), new StorageService());
-main.getData();
-
-
-setInterval(() => {
-   main.setData('data : ' + Math.random());
-   main.displayData();
-}, 1000);
-
+const ds = new DataService();
+const ss = new StorageService();
+const client1 = new Main(ds, ss);
+client1.getData();
+const myEmitter = new EventEmitter();
+myEmitter.on('test', (value) => {
+    client1.setData(value);
+});
+process.stdin.on('data', (data) => {
+    const value = data.toString().trim();
+    myEmitter.emit('test', value);
+});
