@@ -16,13 +16,12 @@ export const indexDoc = (val: any): Promise<any> => {
 
 export const getDoc = (_id: string): Promise<any> => {
     return new Promise((resolve) => {
-        http.get({...searchParams, path: searchParams.path + _id}, (res) => {
+        http.request({...searchParams, path: searchParams.path + _id}, (res) => {
             let body = '';
             res.on('error', (err) => console.error(err));
             res.on('data', (data) => body += data);
             res.on('end', () => resolve(body));
-        });
-
+        }).end();
     });
 };
 
@@ -40,6 +39,35 @@ export const getAllDocs = () => {
                 }
             }
         ));
+        req.end();
+    });
+};
+
+export const getAuth = () => {
+    return new Promise((resolve) => {
+    http.request({...searchParams, path: '_security/_authenticate'}, (res) => {
+            let body = '';
+            res.on('error', (err) => console.error(err));
+            res.on('data', (data) => body += data);
+            res.on('end', () => resolve(body));
+        }).end();
+    });
+};
+
+export const createUser = (id: string, password: string) => {
+    return new Promise((resolve) => {
+        const req = http.request({...indexParams, path: '_security/user/'+ id}, (res) => {
+            let body = '';
+            res.on('error', (err) => console.error(err));
+            res.on('data', (data) => body += data);
+            res.on('end', () => resolve(body));
+        });
+        req.write(JSON.stringify({
+            password : password,
+            roles : [ "admin", "other_role1" ],
+            full_name : "Thibault Leroy",
+            email : "thibault.leroy@orange.com"
+        }));
         req.end();
     });
 };
